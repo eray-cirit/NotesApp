@@ -1,4 +1,5 @@
-# Borç Defteri - Flutter Uygulaması
+# NotesApp - Borç Defteri
+Veteriner Hekim Kuzenimin isteği ve ihtiyaçları doğrultusunda VibeCoding ile Google antigravity kullanarak detaylıca hazırladığım uygulama
 
 Modern ve kullanıcı dostu bir borç takibi ve stok yönetimi uygulaması.
 
@@ -180,3 +181,4 @@ Bu proje eğitim amaçlı geliştirilmiştir.
 ## 👨‍💻 Geliştirici
 
 Flutter ile ❤️ ile geliştirildi.
+VibeCoding & Google Antigravity
