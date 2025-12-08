@@ -25,9 +25,13 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3, // Foreign key support için versiyon artırıldı
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
+      onConfigure: (db) async {
+        // FOREIGN KEY constraints'leri aktif et (SQLite'ta varsayılan KAPALI!)
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
     );
   }
 
@@ -125,6 +129,21 @@ class DatabaseHelper {
           FOREIGN KEY (person_id) REFERENCES persons (id) ON DELETE CASCADE
         )
       ''');
+    }
+    
+    if (oldVersion < 3) {
+      // Version 3: Foreign key constraint fix
+      // Tüm tabloları yeniden oluştur (foreign keys düzgün çalışsın diye)
+      // Not: Bu upgrade eski verileri SİLECEK
+      await db.execute('DROP TABLE IF EXISTS operations');
+      await db.execute('DROP TABLE IF EXISTS transactions');
+      await db.execute('DROP TABLE IF EXISTS stock_histories');
+      await db.execute('DROP TABLE IF EXISTS persons');
+      await db.execute('DROP TABLE IF EXISTS products');
+      await db.execute('DROP TABLE IF EXISTS locations');
+      
+      // Tabloları yeniden oluştur
+      await _createDB(db, 3);
     }
   }
 
