@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/locations_cubit.dart';
 import '../models/location.dart';
+import '../models/states/locations_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/confirmation_dialog.dart';
 import 'persons_screen.dart';

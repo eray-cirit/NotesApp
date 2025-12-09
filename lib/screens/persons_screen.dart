@@ -3,14 +3,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/persons_cubit.dart';
 import '../models/location.dart';
 import '../models/person.dart';
+import '../models/states/persons_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/confirmation_dialog.dart';
 import 'person_detail_screen.dart';
 
-class PersonsScreen extends StatelessWidget {
+class PersonsScreen extends StatefulWidget {
   final Location location;
 
   const PersonsScreen({super.key, required this.location});
+
+  @override
+  State<PersonsScreen> createState() => _PersonsScreenState();
+}
+
+class _PersonsScreenState extends State<PersonsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // State'i resetle ve kişileri yükle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PersonsCubit>().resetState();
+      context.read<PersonsCubit>().loadPersons(widget.location.id!);
+    });
+  }
+
+  @override
+  void dispose() {
+    // State'i temizle
+    context.read<PersonsCubit>().resetState();
+    super.dispose();
+  }
 
   Future<void> _addPerson(BuildContext context) async {
     final controller = TextEditingController();
@@ -44,7 +67,7 @@ class PersonsScreen extends StatelessWidget {
     );
 
     if (result == true && controller.text.isNotEmpty && context.mounted) {
-      context.read<PersonsCubit>().addPerson(location.id!, controller.text.trim());
+      context.read<PersonsCubit>().addPerson(widget.location.id!, controller.text.trim());
     }
   }
 
@@ -76,7 +99,7 @@ class PersonsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(location.name),
+        title: Text(widget.location.name),
       ),
       body: BlocConsumer<PersonsCubit, PersonsState>(
         listener: (context, state) {
@@ -90,8 +113,7 @@ class PersonsScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state is PersonsInitial || (state is PersonsLoaded && state.persons.isEmpty && context.read<PersonsCubit>().state is! PersonsLoaded)) {
-            context.read<PersonsCubit>().loadPersons(location.id!);
+          if (state is PersonsInitial) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -109,7 +131,7 @@ class PersonsScreen extends StatelessWidget {
                   Text('Hata: ${state.message}'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => context.read<PersonsCubit>().loadPersons(location.id!),
+                    onPressed: () => context.read<PersonsCubit>().loadPersons(widget.location.id!),
                     child: const Text('Tekrar Dene'),
                   ),
                 ],
@@ -153,7 +175,7 @@ class PersonsScreen extends StatelessWidget {
             }
 
             return RefreshIndicator(
-              onRefresh: () => context.read<PersonsCubit>().loadPersons(location.id!),
+              onRefresh: () => context.read<PersonsCubit>().loadPersons(widget.location.id!),
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: persons.length,

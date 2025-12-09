@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../cubits/products_cubit.dart';
 import '../models/product.dart';
+import '../models/states/products_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/stock_quantity_dialog.dart';
 import 'product_detail_screen.dart';

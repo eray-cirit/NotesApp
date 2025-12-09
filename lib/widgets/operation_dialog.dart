@@ -112,7 +112,11 @@ class _OperationDialogState extends State<OperationDialog> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR').format(date);
+    try {
+      return DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR').format(date);
+    } catch (e) {
+      return DateFormat('dd MMMM yyyy, HH:mm').format(date);
+    }
   }
 
   @override

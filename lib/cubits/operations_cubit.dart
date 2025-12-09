@@ -1,35 +1,7 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/operation.dart';
-
-// States
-abstract class OperationsState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class OperationsInitial extends OperationsState {}
-
-class OperationsLoading extends OperationsState {}
-
-class OperationsLoaded extends OperationsState {
-  final List<Operation> operations;
-
-  OperationsLoaded(this.operations);
-
-  @override
-  List<Object?> get props => [operations];
-}
-
-class OperationsError extends OperationsState {
-  final String message;
-
-  OperationsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/operations_state.dart';
 
 // Cubit
 class OperationsCubit extends Cubit<OperationsState> {
@@ -40,13 +12,31 @@ class OperationsCubit extends Cubit<OperationsState> {
 
   OperationsCubit(this._db) : super(OperationsInitial());
 
+  /// Reset state to initial
+  void resetState() {
+    _currentPersonId = null;
+    _startDate = null;
+    _endDate = null;
+    emit(OperationsInitial());
+  }
+
   Future<void> loadOperations(int personId) async {
     try {
+      // Eğer farklı bir person'a geçiş yapılıyorsa state'i resetle
+      if (_currentPersonId != null && _currentPersonId != personId) {
+        emit(OperationsInitial());
+        _startDate = null;
+        _endDate = null;
+      }
+      
       _currentPersonId = personId;
       emit(OperationsLoading());
       
       final operations = await _db.getOperationsByPerson(personId);
-      emit(OperationsLoaded(operations));
+      emit(OperationsLoaded(
+        operations: operations,
+        personId: personId,
+      ));
     } catch (e) {
       emit(OperationsError(e.toString()));
     }
@@ -71,7 +61,10 @@ class OperationsCubit extends Cubit<OperationsState> {
         operations = await _db.getOperationsByPerson(_currentPersonId!);
       }
       
-      emit(OperationsLoaded(operations));
+      emit(OperationsLoaded(
+        operations: operations,
+        personId: _currentPersonId!,
+      ));
     } catch (e) {
       emit(OperationsError(e.toString()));
     }

@@ -1,42 +1,19 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/product.dart';
 import '../models/stock_history.dart';
-
-// States
-abstract class ProductsState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class ProductsInitial extends ProductsState {}
-
-class ProductsLoading extends ProductsState {}
-
-class ProductsLoaded extends ProductsState {
-  final List<Product> products;
-
-  ProductsLoaded(this.products);
-
-  @override
-  List<Object?> get props => [products];
-}
-
-class ProductsError extends ProductsState {
-  final String message;
-
-  ProductsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/products_state.dart';
 
 // Cubit
 class ProductsCubit extends Cubit<ProductsState> {
   final DatabaseHelper _db;
 
   ProductsCubit(this._db) : super(ProductsInitial());
+
+  /// Reset state to initial
+  void resetState() {
+    emit(ProductsInitial());
+  }
 
   Future<void> loadProducts() async {
     try {

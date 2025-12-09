@@ -6,6 +6,8 @@ import '../cubits/operations_cubit.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as app_transaction;
 import '../models/operation.dart';
+import '../models/states/debts_state.dart';
+import '../models/states/operations_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/confirmation_dialog.dart';
 import '../widgets/date_range_filter.dart';
@@ -25,9 +27,19 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Cubitleri başlat
+    // Cubitleri resetle ve başlat
+    context.read<DebtsCubit>().resetState();
+    context.read<OperationsCubit>().resetState();
     context.read<DebtsCubit>().loadDebts(widget.person.id!);
     context.read<OperationsCubit>().loadOperations(widget.person.id!);
+  }
+
+  @override
+  void dispose() {
+    // State'i temizle
+    context.read<DebtsCubit>().resetState();
+    context.read<OperationsCubit>().resetState();
+    super.dispose();
   }
 
   String _formatCurrency(double amount) {
@@ -397,6 +409,7 @@ class _DebtsTabState extends State<_DebtsTab> {
 
               // Filtreleme
               DateRangeFilter(
+                key: ValueKey('debts_filter_${widget.person.id}'),
                 onFilterChanged: (start, end) {
                   context.read<DebtsCubit>().filterByDateRange(start, end);
                 },
@@ -650,6 +663,7 @@ class _OperationsTabState extends State<_OperationsTab> {
             children: [
               // Filtreleme
               DateRangeFilter(
+                key: ValueKey('operations_filter_${widget.person.id}'),
                 onFilterChanged: (start, end) {
                   context.read<OperationsCubit>().filterByDateRange(start, end);
                 },

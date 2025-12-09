@@ -1,36 +1,7 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/person.dart';
-
-// States
-abstract class PersonsState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class PersonsInitial extends PersonsState {}
-
-class PersonsLoading extends PersonsState {}
-
-class PersonsLoaded extends PersonsState {
-  final List<Person> persons;
-  final Map<int, double> personDebts;
-
-  PersonsLoaded(this.persons, this.personDebts);
-
-  @override
-  List<Object?> get props => [persons, personDebts];
-}
-
-class PersonsError extends PersonsState {
-  final String message;
-
-  PersonsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/persons_state.dart';
 
 // Cubit
 class PersonsCubit extends Cubit<PersonsState> {
@@ -39,8 +10,19 @@ class PersonsCubit extends Cubit<PersonsState> {
 
   PersonsCubit(this._db) : super(PersonsInitial());
 
+  /// Reset state to initial
+  void resetState() {
+    _currentLocationId = null;
+    emit(PersonsInitial());
+  }
+
   Future<void> loadPersons(int locationId) async {
     try {
+      // Eğer farklı bir location'a geçiş yapılıyorsa state'i resetle
+      if (_currentLocationId != null && _currentLocationId != locationId) {
+        emit(PersonsInitial());
+      }
+      
       _currentLocationId = locationId;
       emit(PersonsLoading());
       final persons = await _db.getPersonsByLocation(locationId);
@@ -52,7 +34,11 @@ class PersonsCubit extends Cubit<PersonsState> {
         personDebts[person.id!] = debt;
       }
       
-      emit(PersonsLoaded(persons, personDebts));
+      emit(PersonsLoaded(
+        persons: persons,
+        personDebts: personDebts,
+        locationId: locationId,
+      ));
     } catch (e) {
       emit(PersonsError(e.toString()));
     }

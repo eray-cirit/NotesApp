@@ -1,41 +1,18 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/location.dart';
-
-// States
-abstract class LocationsState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class LocationsInitial extends LocationsState {}
-
-class LocationsLoading extends LocationsState {}
-
-class LocationsLoaded extends LocationsState {
-  final List<Location> locations;
-
-  LocationsLoaded(this.locations);
-
-  @override
-  List<Object?> get props => [locations];
-}
-
-class LocationsError extends LocationsState {
-  final String message;
-
-  LocationsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/locations_state.dart';
 
 // Cubit
 class LocationsCubit extends Cubit<LocationsState> {
   final DatabaseHelper _db;
 
   LocationsCubit(this._db) : super(LocationsInitial());
+
+  /// Reset state to initial
+  void resetState() {
+    emit(LocationsInitial());
+  }
 
   Future<void> loadLocations() async {
     try {

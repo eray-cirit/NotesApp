@@ -6,6 +6,7 @@ import '../cubits/stock_history_cubit.dart';
 import '../cubits/products_cubit.dart';
 import '../models/product.dart';
 import '../models/stock_history.dart';
+import '../models/states/stock_history_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/date_range_filter.dart';
 import '../widgets/stock_quantity_dialog.dart';
@@ -96,7 +97,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
           if (state is StockHistoryLoaded) {
             final product = state.product;
-            final histories = state.histories;
+            final histories = state.history;
 
             return SingleChildScrollView(
               child: Column(
@@ -189,6 +190,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   // Filtreleme
                   DateRangeFilter(
+                    key: ValueKey('stock_history_filter_${widget.product.id}'),
                     onFilterChanged: (start, end) {
                       context.read<StockHistoryCubit>().filterByDateRange(start, end);
                     },

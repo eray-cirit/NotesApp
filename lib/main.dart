@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/home_screen.dart';
 import 'database/database_helper.dart';
@@ -38,6 +39,19 @@ class BorcDefteriApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Borç Defteri',
         debugShowCheckedModeBanner: false,
+        
+        // Lokalizasyon ayarları
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('tr', 'TR'), // Türkçe
+          Locale('en', 'US'), // İngilizce (fallback)
+        ],
+        locale: const Locale('tr', 'TR'),
+        
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(

@@ -1,36 +1,7 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/transaction.dart' as app_transaction;
-
-// States
-abstract class DebtsState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class DebtsInitial extends DebtsState {}
-
-class DebtsLoading extends DebtsState {}
-
-class DebtsLoaded extends DebtsState {
-  final List<app_transaction.Transaction> transactions;
-  final double totalDebt;
-
-  DebtsLoaded(this.transactions, this.totalDebt);
-
-  @override
-  List<Object?> get props => [transactions, totalDebt];
-}
-
-class DebtsError extends DebtsState {
-  final String message;
-
-  DebtsError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/debts_state.dart';
 
 // Cubit
 class DebtsCubit extends Cubit<DebtsState> {
@@ -41,15 +12,34 @@ class DebtsCubit extends Cubit<DebtsState> {
 
   DebtsCubit(this._db) : super(DebtsInitial());
 
+  /// Reset state to initial
+  void resetState() {
+    _currentPersonId = null;
+    _startDate = null;
+    _endDate = null;
+    emit(DebtsInitial());
+  }
+
   Future<void> loadDebts(int personId) async {
     try {
+      // Eğer farklı bir person'a geçiş yapılıyorsa state'i resetle
+      if (_currentPersonId != null && _currentPersonId != personId) {
+        emit(DebtsInitial());
+        _startDate = null;
+        _endDate = null;
+      }
+      
       _currentPersonId = personId;
       emit(DebtsLoading());
       
       final transactions = await _db.getTransactionsByPerson(personId);
       final totalDebt = await _db.getTotalDebt(personId);
       
-      emit(DebtsLoaded(transactions, totalDebt));
+      emit(DebtsLoaded(
+        transactions: transactions,
+        totalDebt: totalDebt,
+        personId: personId,
+      ));
     } catch (e) {
       emit(DebtsError(e.toString()));
     }
@@ -84,7 +74,11 @@ class DebtsCubit extends Cubit<DebtsState> {
         }
       }
       
-      emit(DebtsLoaded(transactions, totalDebt));
+      emit(DebtsLoaded(
+        transactions: transactions,
+        totalDebt: totalDebt,
+        personId: _currentPersonId!,
+      ));
     } catch (e) {
       emit(DebtsError(e.toString()));
     }

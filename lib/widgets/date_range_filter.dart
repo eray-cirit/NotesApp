@@ -24,11 +24,58 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialStartDate != null) {
-      _startDate = DateTime.parse(widget.initialStartDate!);
+    try {
+      if (widget.initialStartDate != null && widget.initialStartDate!.isNotEmpty) {
+        _startDate = DateTime.parse(widget.initialStartDate!);
+      }
+    } catch (e) {
+      // Tarih parse hatası durumunda null olarak bırak
+      _startDate = null;
     }
-    if (widget.initialEndDate != null) {
-      _endDate = DateTime.parse(widget.initialEndDate!);
+    
+    try {
+      if (widget.initialEndDate != null && widget.initialEndDate!.isNotEmpty) {
+        _endDate = DateTime.parse(widget.initialEndDate!);
+      }
+    } catch (e) {
+      // Tarih parse hatası durumunda null olarak bırak
+      _endDate = null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(DateRangeFilter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Parent'tan initial değerler değişirse state'i güncelle
+    if (widget.initialStartDate != oldWidget.initialStartDate ||
+        widget.initialEndDate != oldWidget.initialEndDate) {
+      _updateDatesFromWidget();
+    }
+  }
+
+  void _updateDatesFromWidget() {
+    try {
+      if (widget.initialStartDate != null && widget.initialStartDate!.isNotEmpty) {
+        _startDate = DateTime.parse(widget.initialStartDate!);
+      } else {
+        _startDate = null;
+      }
+    } catch (e) {
+      _startDate = null;
+    }
+    
+    try {
+      if (widget.initialEndDate != null && widget.initialEndDate!.isNotEmpty) {
+        _endDate = DateTime.parse(widget.initialEndDate!);
+      } else {
+        _endDate = null;
+      }
+    } catch (e) {
+      _endDate = null;
+    }
+    
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -40,7 +87,11 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
       initialDateRange: _startDate != null && _endDate != null
           ? DateTimeRange(start: _startDate!, end: _endDate!)
           : null,
+      initialEntryMode: DatePickerEntryMode.calendarOnly, // YENİ - Sadece takvim modu
       locale: const Locale('tr', 'TR'),
+      helpText: 'TARİH ARALIĞI SEÇİN',
+      saveText: 'TAMAM',
+      cancelText: 'İPTAL',
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -72,7 +123,11 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('dd.MM.yyyy').format(date);
+    try {
+      return DateFormat('dd.MM.yyyy', 'tr_TR').format(date);
+    } catch (e) {
+      return DateFormat('dd.MM.yyyy').format(date);
+    }
   }
 
   @override

@@ -1,37 +1,8 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../database/database_helper.dart';
 import '../models/stock_history.dart';
 import '../models/product.dart';
-
-// States
-abstract class StockHistoryState extends Equatable {
-  @override
-  List<Object?> get props => [];
-}
-
-class StockHistoryInitial extends StockHistoryState {}
-
-class StockHistoryLoading extends StockHistoryState {}
-
-class StockHistoryLoaded extends StockHistoryState {
-  final List<StockHistory> histories;
-  final Product product;
-
-  StockHistoryLoaded(this.histories, this.product);
-
-  @override
-  List<Object?> get props => [histories, product];
-}
-
-class StockHistoryError extends StockHistoryState {
-  final String message;
-
-  StockHistoryError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}
+import '../models/states/stock_history_state.dart';
 
 // Cubit
 class StockHistoryCubit extends Cubit<StockHistoryState> {
@@ -42,8 +13,23 @@ class StockHistoryCubit extends Cubit<StockHistoryState> {
 
   StockHistoryCubit(this._db) : super(StockHistoryInitial());
 
+  /// Reset state to initial
+  void resetState() {
+    _currentProductId = null;
+    _startDate = null;
+    _endDate = null;
+    emit(StockHistoryInitial());
+  }
+
   Future<void> loadHistory(int productId) async {
     try {
+      // Eğer farklı bir product'a geçiş yapılıyorsa state'i resetle
+      if (_currentProductId != null && _currentProductId != productId) {
+        emit(StockHistoryInitial());
+        _startDate = null;
+        _endDate = null;
+      }
+      
       _currentProductId = productId;
       emit(StockHistoryLoading());
       
@@ -54,7 +40,11 @@ class StockHistoryCubit extends Cubit<StockHistoryState> {
       }
       
       final histories = await _db.getStockHistoryByProduct(productId);
-      emit(StockHistoryLoaded(histories, product));
+      emit(StockHistoryLoaded(
+        history: histories,
+        productId: productId,
+        product: product,
+      ));
     } catch (e) {
       emit(StockHistoryError(e.toString()));
     }
@@ -85,7 +75,11 @@ class StockHistoryCubit extends Cubit<StockHistoryState> {
         histories = await _db.getStockHistoryByProduct(_currentProductId!);
       }
       
-      emit(StockHistoryLoaded(histories, product));
+      emit(StockHistoryLoaded(
+        history: histories,
+        productId: _currentProductId!,
+        product: product,
+      ));
     } catch (e) {
       emit(StockHistoryError(e.toString()));
     }
