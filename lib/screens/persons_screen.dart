@@ -6,6 +6,7 @@ import '../models/person.dart';
 import '../models/states/persons_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/confirmation_dialog.dart';
+import '../widgets/search_dialog.dart';
 import 'person_detail_screen.dart';
 
 class PersonsScreen extends StatefulWidget {
@@ -18,6 +19,8 @@ class PersonsScreen extends StatefulWidget {
 }
 
 class _PersonsScreenState extends State<PersonsScreen> {
+  String _searchQuery = '';
+  
   @override
   void initState() {
     super.initState();
@@ -33,6 +36,28 @@ class _PersonsScreenState extends State<PersonsScreen> {
     // State'i temizle
     context.read<PersonsCubit>().resetState();
     super.dispose();
+  }
+
+  Future<void> _showSearch() async {
+    final query = await SearchDialog.show(
+      context: context,
+      initialQuery: _searchQuery,
+      hintText: 'Kişi ara...',
+    );
+
+    if (query != null) {
+      setState(() {
+        _searchQuery = query;
+      });
+    }
+  }
+
+  List<Person> _filterPersons(List<Person> persons) {
+    if (_searchQuery.isEmpty) return persons;
+    final query = _searchQuery.toLowerCase();
+    return persons.where((person) {
+      return person.name.toLowerCase().contains(query);
+    }).toList();
   }
 
   Future<void> _addPerson(BuildContext context) async {
@@ -99,7 +124,29 @@ class _PersonsScreenState extends State<PersonsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.location.name),
+        title: _searchQuery.isEmpty
+            ? Text(widget.location.name)
+            : Text(
+                'Arama: "$_searchQuery"',
+                overflow: TextOverflow.ellipsis,
+              ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _showSearch,
+            tooltip: 'Ara',
+          ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+              tooltip: 'Aramayı Temizle',
+            ),
+        ],
       ),
       body: BlocConsumer<PersonsCubit, PersonsState>(
         listener: (context, state) {
@@ -140,10 +187,11 @@ class _PersonsScreenState extends State<PersonsScreen> {
           }
 
           if (state is PersonsLoaded) {
-            final persons = state.persons;
+            final allPersons = state.persons;
+            final persons = _filterPersons(allPersons);
             final personDebts = state.personDebts;
 
-            if (persons.isEmpty) {
+            if (allPersons.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

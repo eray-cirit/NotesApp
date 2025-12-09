@@ -25,6 +25,7 @@ class OperationDialog extends StatefulWidget {
 
 class _OperationDialogState extends State<OperationDialog> {
   final _descriptionController = TextEditingController();
+  final _customTypeController = TextEditingController();
   String _selectedType = 'Muayene';
   DateTime _selectedDate = DateTime.now();
 
@@ -32,6 +33,7 @@ class _OperationDialogState extends State<OperationDialog> {
     'Muayene',
     'Tohumlama',
     'Aşı',
+    'İğne',
     'Cerrahi',
     'Kontrol',
     'Tedavi',
@@ -41,6 +43,7 @@ class _OperationDialogState extends State<OperationDialog> {
   @override
   void dispose() {
     _descriptionController.dispose();
+    _customTypeController.dispose();
     super.dispose();
   }
 
@@ -104,8 +107,24 @@ class _OperationDialogState extends State<OperationDialog> {
       return;
     }
 
+    // Diğer seçiliyse ve custom type boşsa uyar
+    if (_selectedType == 'Diğer' && _customTypeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen işlem türünü belirtin'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Diğer seçiliyse custom type kullan, değilse selected type kullan
+    final operationType = _selectedType == 'Diğer'
+        ? _customTypeController.text.trim()
+        : _selectedType;
+
     Navigator.pop(context, {
-      'operationType': _selectedType,
+      'operationType': operationType,
       'description': _descriptionController.text.trim(),
       'operationDate': _selectedDate,
     });
@@ -155,6 +174,22 @@ class _OperationDialogState extends State<OperationDialog> {
                 }
               },
             ),
+            
+            // Diğer seçilince custom type input göster
+            if (_selectedType == 'Diğer') ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _customTypeController,
+                decoration: const InputDecoration(
+                  labelText: 'İşlem Türü',
+                  hintText: 'Özel işlem türünü yazın',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.edit_outlined),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+            ],
+            
             const SizedBox(height: 16),
             // Tarih seçimi
             const Text(

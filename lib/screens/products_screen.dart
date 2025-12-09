@@ -9,10 +9,40 @@ import '../models/product.dart';
 import '../models/states/products_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/stock_quantity_dialog.dart';
+import '../widgets/search_dialog.dart';
 import 'product_detail_screen.dart';
 
-class ProductsScreen extends StatelessWidget {
+class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
+
+  @override
+  State<ProductsScreen> createState() => _ProductsScreenState();
+}
+
+class _ProductsScreenState extends State<ProductsScreen> {
+  String _searchQuery = '';
+
+  Future<void> _showSearch() async {
+    final query = await SearchDialog.show(
+      context: context,
+      initialQuery: _searchQuery,
+      hintText: 'Ürün ara...',
+    );
+
+    if (query != null) {
+      setState(() {
+        _searchQuery = query;
+      });
+    }
+  }
+
+  List<Product> _filterProducts(List<Product> products) {
+    if (_searchQuery.isEmpty) return products;
+    final query = _searchQuery.toLowerCase();
+    return products.where((product) {
+      return product.name.toLowerCase().contains(query);
+    }).toList();
+  }
 
   Future<String?> _pickAndSaveImage() async {
     final picker = ImagePicker();
@@ -168,7 +198,29 @@ class ProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stok Kontrol'),
+        title: _searchQuery.isEmpty
+            ? const Text('Stok Kontrol')
+            : Text(
+                'Arama: "$_searchQuery"',
+                overflow: TextOverflow.ellipsis,
+              ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _showSearch,
+            tooltip: 'Ara',
+          ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+              tooltip: 'Aramayı Temizle',
+            ),
+        ],
       ),
       body: BlocConsumer<ProductsCubit, ProductsState>(
         listener: (context, state) {
@@ -210,9 +262,10 @@ class ProductsScreen extends StatelessWidget {
           }
 
           if (state is ProductsLoaded) {
-            final products = state.products;
+            final allProducts = state.products;
+            final products = _filterProducts(allProducts);
 
-            if (products.isEmpty) {
+            if (allProducts.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

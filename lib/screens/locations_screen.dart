@@ -5,10 +5,18 @@ import '../models/location.dart';
 import '../models/states/locations_state.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/confirmation_dialog.dart';
+import '../widgets/search_dialog.dart';
 import 'persons_screen.dart';
 
-class LocationsScreen extends StatelessWidget {
+class LocationsScreen extends StatefulWidget {
   const LocationsScreen({super.key});
+
+  @override
+  State<LocationsScreen> createState() => _LocationsScreenState();
+}
+
+class _LocationsScreenState extends State<LocationsScreen> {
+  String _searchQuery = '';
 
   Future<void> _addLocation(BuildContext context) async {
     final controller = TextEditingController();
@@ -66,11 +74,55 @@ class LocationsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _showSearch() async {
+    final query = await SearchDialog.show(
+      context: context,
+      initialQuery: _searchQuery,
+      hintText: 'Mekan ara...',
+    );
+
+    if (query != null) {
+      setState(() {
+        _searchQuery = query;
+      });
+    }
+  }
+
+  List<Location> _filterLocations(List<Location> locations) {
+    if (_searchQuery.isEmpty) return locations;
+    final query = _searchQuery.toLowerCase();
+    return locations.where((loc) {
+      return loc.name.toLowerCase().contains(query);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Defter'),
+        title: _searchQuery.isEmpty
+            ? const Text('Defter')
+            : Text(
+                'Arama: "$_searchQuery"',
+                overflow: TextOverflow.ellipsis,
+              ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _showSearch,
+            tooltip: 'Ara',
+          ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+              tooltip: 'Aramayı Temizle',
+            ),
+        ],
       ),
       body: BlocConsumer<LocationsCubit, LocationsState>(
         listener: (context, state) {
@@ -112,9 +164,10 @@ class LocationsScreen extends StatelessWidget {
           }
 
           if (state is LocationsLoaded) {
-            final locations = state.locations;
+            final allLocations = state.locations;
+            final locations = _filterLocations(allLocations);
 
-            if (locations.isEmpty) {
+            if (allLocations.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
