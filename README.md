@@ -181,4 +181,5 @@ Bu proje eğitim amaçlı geliştirilmiştir.
 ## 👨‍💻 Geliştirici
 
 Flutter ile ❤️ ile geliştirildi.
-VibeCoding & Google Antigravity
+VibeCoding & Google Antigravity sevdim, beğendim, kullandım.
+
