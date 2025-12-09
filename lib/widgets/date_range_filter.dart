@@ -135,7 +135,7 @@ class _DateRangeFilterState extends State<DateRangeFilter> {
     final hasFilter = _startDate != null && _endDate != null;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),

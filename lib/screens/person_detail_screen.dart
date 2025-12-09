@@ -94,34 +94,86 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                 final currentTab = tabController.index;
                 if (currentTab == 0) {
                   // Borçlar tab'ı - İki buton
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      FloatingActionButton.extended(
-                        onPressed: () => _debtsKey.currentState?._addDebt(context, true),
-                        heroTag: 'debt',
-                        backgroundColor: Colors.red,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Borç Ekle'),
+                  return Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            width: 160,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _debtsKey.currentState?._addDebt(context, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade400,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: const Icon(Icons.add, size: 20),
+                              label: const Text(
+                                'Borç Ekle',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: 160,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _debtsKey.currentState?._addDebt(context, false),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade500,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              icon: const Icon(Icons.remove, size: 20),
+                              label: const Text(
+                                'Ödeme Ekle',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      FloatingActionButton.extended(
-                        onPressed: () => _debtsKey.currentState?._addDebt(context, false),
-                        heroTag: 'payment',
-                        backgroundColor: Colors.green,
-                        icon: const Icon(Icons.remove),
-                        label: const Text('Ödeme Ekle'),
-                      ),
-                    ],
+                    ),
                   );
                 } else {
                   // İşlemler tab'ı - Tek buton
-                  return FloatingActionButton.extended(
-                    onPressed: () => _operationsKey.currentState?._addOperation(context),
-                    heroTag: 'operation',
-                    backgroundColor: Colors.blue,
-                    icon: const Icon(Icons.add),
-                    label: const Text('İşlem Ekle'),
+                  return Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SizedBox(
+                        width: 160,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _operationsKey.currentState?._addOperation(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade500,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Icon(Icons.medical_services, size: 20),
+                          label: const Text(
+                            'İşlem Ekle',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 }
               },
@@ -359,7 +411,7 @@ class _DebtsTabState extends State<_DebtsTab> {
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isInDebt
@@ -370,7 +422,7 @@ class _DebtsTabState extends State<_DebtsTab> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: (isInDebt ? Colors.red : totalDebt < 0 ? Colors.green : Colors.blue).withOpacity(0.3),
@@ -389,17 +441,17 @@ class _DebtsTabState extends State<_DebtsTab> {
                               : 'HESAP TEMİZ',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       _formatCurrency(totalDebt.abs()),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 36,
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
